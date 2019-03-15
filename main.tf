@@ -7,7 +7,9 @@ variable "server_port" {
     default = 8080
 }
 
-resource "aws_launch_configuration" {
+data "aws_availability_zones" "all" {}
+
+resource "aws_launch_configuration" "example" {
     image_id = "ami-40d28157"
     instance_type = "t2.micro"
     security_groups = ["${aws_security_group.instance.id}"]
@@ -56,6 +58,7 @@ resource "aws_security_group" "instance" {
 
 resource "aws_autoscaling_group" "example" {
     launch_configuration = "${aws_launch_configuration.example.id}"
+    availability_zones = ["${data.aws_availability_zones.all.names}"]
 
     min_size = 2
     max_size = 10
