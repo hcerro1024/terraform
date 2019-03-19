@@ -2,8 +2,43 @@ provider "aws" {
     region = "us-east-1"
 }
 
+# Used in Autoscaling Group and ELB
 data "aws_availability_zones" "all" {}
 
+resource "aws_security_group" "instance" {
+    name = "terraform-example-instance"
+
+    ingress {
+	from_port   = "${var.server_port}"
+	to_port     = "${var.server_port}"
+	protocol    = "tcp"
+	cidr_blocks = ["0.0.0.0/0"]
+    }
+
+    lifecycle = {
+	create_before_destroy = true
+    }
+}
+
+resource "aws_security_group" "elb" {
+    name = "terraform-example-elb"
+    
+    ingress {
+	from_port = 80
+	to_port = 80
+	protocol = "tcp"
+	cidr_blocks = ["0.0.0.0/0"]
+    }
+
+    egress {
+	from_port = 0
+	to_port = 0
+	protocol = "-1"
+	cidr_blocks = ["0.0.0.0/0"]
+    }
+}
+
+# Using a Launch Configuration since we don't yet have Launch Templates
 resource "aws_launch_configuration" "example" {
     image_id = "ami-40d28157"
     instance_type = "t2.micro"
@@ -20,6 +55,7 @@ resource "aws_launch_configuration" "example" {
     }
 }
 
+/*
 resource "aws_instance" "example" {
     ami = "ami-40d28157"
     instance_type = "t2.micro"
@@ -35,21 +71,7 @@ resource "aws_instance" "example" {
 	Name = "terraform-example"
     }
 }
-
-resource "aws_security_group" "instance" {
-    name = "terraform-example-instance"
-
-    ingress {
-	from_port   = "${var.server_port}"
-	to_port     = "${var.server_port}"
-	protocol    = "tcp"
-	cidr_blocks = ["0.0.0.0/0"]
-    }
-
-    lifecycle = {
-	create_before_destroy = true
-    }
-}
+*/
 
 resource "aws_autoscaling_group" "example" {
     launch_configuration = "${aws_launch_configuration.example.id}"
@@ -89,30 +111,6 @@ resource "aws_elb" "example" {
     }
 }
 
-resource "aws_security_group" "elb" {
-    name = "terraform-example-elb"
-    
-    ingress {
-	from_port = 80
-	to_port = 80
-	protocol = "tcp"
-	cidr_blocks = ["0.0.0.0/0"]
-    }
-
-    egress {
-	from_port = 0
-	to_port = 0
-	protocol = "-1"
-	cidr_blocks = ["0.0.0.0/0"]
-    }
-}
-
-/*
-output "public_ip" {
-    value = "${aws_instance.example.public_ip}"
-}
-*/
-
 output "elb_dns_name" {
-    "${aws_elb.example.dns_name}"
+    value = "${aws_elb.example.dns_name}"
 }
