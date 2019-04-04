@@ -1,0 +1,6 @@
+<<-EOF
+sudo yum update -y
+#!/bin/bash
+echo "Hello, World" > index.html
+nohup busybox httpd -f -p "${var.server_port}" &
+EOF
