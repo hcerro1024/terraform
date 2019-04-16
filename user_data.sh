@@ -1,6 +1,7 @@
-<<-EOF
-sudo yum update -y
 #!/bin/bash
-echo "Hello, World" > index.html
-nohup busybox httpd -f -p "${var.server_port}" &
-EOF
+yum update -y
+yum install httpd -y
+service httpd start
+chkconfig httpd on
+yum install tigervnc-server -y
+echo "Hello, World" > /var/www/html/index.html
