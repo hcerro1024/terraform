@@ -66,7 +66,7 @@ resource "aws_instance" "example" {
     security_groups = ["${aws_security_group.launch_config.name}"]
 
     user_data = "${file("user_data.sh")}"
-    key_name = "MyTestKeyPair"
+//    key_name = "rsa2048key"
     tags = {
         Name = "My Test Server"
     }
